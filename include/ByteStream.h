@@ -22,19 +22,25 @@
     http://github.com/PabloAlbiol/ByteStream
 */
 
-#ifndef BYTESTREAM_H
-#define BYTESTREAM_H
+#pragma once
 
+#include <string>
 
-class ByteStream
+#include "Export.h"
+
+enum BYTESTREAM_API Mode {
+    READ,
+    WRITE
+};
+
+class BYTESTREAM_API ByteStream
 {
     // Array struct forward declaration
     struct Array;
 
 public:
     ByteStream(const unsigned int cap);
-    ByteStream(const ByteStream &c); // Copy constructor
-    ByteStream &operator=(const ByteStream &c); // Copy assignment operator
+    ByteStream(unsigned char* buf, const unsigned int size, Mode mode);
     ~ByteStream();
 
     void clear();
@@ -58,26 +64,26 @@ public:
     ByteStream &operator<<(const float val);
     ByteStream &operator<<(const double val);
     ByteStream &operator<<(const long double val);
-    ByteStream &operator<<(const char string[]);
+    ByteStream &operator<<(const std::string& val);
     ByteStream &operator<<(const ByteStream::Array array);
 
     // Operator >> overloading
-    ByteStream &operator>>(const bool &val);
-    ByteStream &operator>>(const unsigned char &val);
-    ByteStream &operator>>(const char &val);
-    ByteStream &operator>>(const unsigned short int &val);
-    ByteStream &operator>>(const short int &val);
-    ByteStream &operator>>(const unsigned int &val);
-    ByteStream &operator>>(const int &val);
-    ByteStream &operator>>(const unsigned long int &val);
-    ByteStream &operator>>(const long int &val);
-    ByteStream &operator>>(const unsigned long long int &val);
-    ByteStream &operator>>(const long long int &val);
-    ByteStream &operator>>(const float &val);
-    ByteStream &operator>>(const double &val);
-    ByteStream &operator>>(const long double &val);
-    ByteStream &operator>>(const char string[]);
-    ByteStream &operator>>(const ByteStream::Array &array);
+    ByteStream &operator>>(bool &val);
+    ByteStream &operator>>(unsigned char &val);
+    ByteStream &operator>>(char &val);
+    ByteStream &operator>>(unsigned short int &val);
+    ByteStream &operator>>(short int &val);
+    ByteStream &operator>>(unsigned int &val);
+    ByteStream &operator>>(int &val);
+    ByteStream &operator>>(unsigned long int &val);
+    ByteStream &operator>>(long int &val);
+    ByteStream &operator>>(unsigned long long int &val);
+    ByteStream &operator>>(long long int &val);
+    ByteStream &operator>>(float &val);
+    ByteStream &operator>>(double &val);
+    ByteStream &operator>>(long double &val);
+    ByteStream &operator>>(std::string& val);
+    ByteStream &operator>>(ByteStream::Array &array);
 
     // Operator () overloading
     ByteStream::Array operator()(bool buf[], const unsigned int size);
@@ -101,6 +107,7 @@ private:
     unsigned char remove();
     void reorder();
 
+    bool ownBuffer = true;
     unsigned char *buffer;
     unsigned int capacity;
     unsigned int index;
@@ -132,5 +139,3 @@ private:
         BS_LDOUBLE
     };
 };
-
-#endif // BYTESTREAM_H

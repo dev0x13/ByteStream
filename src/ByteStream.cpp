@@ -18,8 +18,10 @@
 ==============================================================================*/
 
 /*
-    ByteStream is a C++ library for encoding and decoding different data types into bytes
-    http://github.com/PabloAlbiol/ByteStream
+    This is a fork of:
+        ByteStream is a C++ library for encoding and decoding different data types into bytes
+        http://github.com/PabloAlbiol/ByteStream
+    https://github.com/dev0x13/ByteStream
 */
 
 #include "ByteStream.h"
@@ -30,7 +32,7 @@
 ByteStream::ByteStream(const unsigned int cap)
 {
     // Buffer array. Stores the byte stream
-    buffer = NULL;
+    buffer = nullptr;
 
     // Buffer capacity. Memory available
     capacity = cap;
@@ -44,68 +46,30 @@ ByteStream::ByteStream(const unsigned int cap)
         // Create buffer array dynamically
         buffer = new unsigned char[cap];
     }
-    catch(std::bad_alloc)
+    catch(std::bad_alloc&)
     {
         // Not enough memory
         capacity = 0;
     }
 }
 
-ByteStream::ByteStream(const ByteStream &c)
-{
-    buffer = NULL;
-    capacity = c.capacity;
-    index = c.index;
-    length = c.length;
+ByteStream::ByteStream(unsigned char* buf, const unsigned int size, Mode mode) {
+    buffer = buf;
+    capacity = size;
+    ownBuffer = false;
+    index = 0;
 
-    try
-    {
-        buffer = new unsigned char[capacity];
-        memcpy(buffer, c.buffer, capacity*sizeof(unsigned char));
-    }
-    catch(std::bad_alloc)
-    {
-        // Not enough memory
-        capacity = 0;
-        index = 0;
+    if (mode == READ) {
+        length = size;
+    } else {
         length = 0;
     }
-}
-
-ByteStream &ByteStream::operator=(const ByteStream &c)
-{
-    if (this != &c)
-    {
-        capacity = c.capacity;
-        index = c.index;
-        length = c.length;
-
-        delete[] buffer;
-        if (c.buffer)
-        {
-            try
-            {
-                buffer = new unsigned char[capacity];
-                memcpy(buffer, c.buffer, capacity*sizeof(unsigned char));
-            }
-            catch(std::bad_alloc)
-            {
-                // Not enough memory
-                capacity = 0;
-                index = 0;
-                length = 0;
-            }
-        }
-        else buffer = NULL;
-    }
-    return *this;
 }
 
 ByteStream::~ByteStream()
 {
     // Free memory
-    if (buffer != NULL)
-    {
+    if (ownBuffer) {
         delete[] buffer;
     }
 }
@@ -336,11 +300,12 @@ ByteStream &ByteStream::operator<<(const long double val)
     return *this;
 }
 
-ByteStream &ByteStream::operator<<(const char string[])
+ByteStream &ByteStream::operator<<(const std::string& val)
 {
-    for (unsigned int i = 0; i < (strlen(string) + 1); i++)
+    *this << val.size();
+    for (unsigned int i = 0; i < val.size(); i++)
     {
-        *this << string[i];
+        *this << val[i];
     }
     return *this;
 }
@@ -495,7 +460,7 @@ ByteStream &ByteStream::operator<<(const ByteStream::Array array)
 
 // Operator >> overloading
 
-ByteStream &ByteStream::operator>>(const bool &val)
+ByteStream &ByteStream::operator>>(bool &val)
 {
     unsigned char *pointer = (unsigned char *)&val;
     for (unsigned int i = 0; i < sizeof(bool); i++)
@@ -505,7 +470,7 @@ ByteStream &ByteStream::operator>>(const bool &val)
     return *this;
 }
 
-ByteStream &ByteStream::operator>>(const unsigned char &val)
+ByteStream &ByteStream::operator>>(unsigned char &val)
 {
     unsigned char *pointer = (unsigned char *)&val;
     for (unsigned int i = 0; i < sizeof(unsigned char); i++)
@@ -515,7 +480,7 @@ ByteStream &ByteStream::operator>>(const unsigned char &val)
     return *this;
 }
 
-ByteStream &ByteStream::operator>>(const char &val)
+ByteStream &ByteStream::operator>>(char &val)
 {
     unsigned char *pointer = (unsigned char *)&val;
     for (unsigned int i = 0; i < sizeof(char); i++)
@@ -525,7 +490,7 @@ ByteStream &ByteStream::operator>>(const char &val)
     return *this;
 }
 
-ByteStream &ByteStream::operator>>(const unsigned short int &val)
+ByteStream &ByteStream::operator>>(unsigned short int &val)
 {
     unsigned char *pointer = (unsigned char *)&val;
     for (unsigned int i = 0; i < sizeof(unsigned short int); i++)
@@ -535,7 +500,7 @@ ByteStream &ByteStream::operator>>(const unsigned short int &val)
     return *this;
 }
 
-ByteStream &ByteStream::operator>>(const short int &val)
+ByteStream &ByteStream::operator>>(short int &val)
 {
     unsigned char *pointer = (unsigned char *)&val;
     for (unsigned int i = 0; i < sizeof(short int); i++)
@@ -545,7 +510,7 @@ ByteStream &ByteStream::operator>>(const short int &val)
     return *this;
 }
 
-ByteStream &ByteStream::operator>>(const unsigned int &val)
+ByteStream &ByteStream::operator>>(unsigned int &val)
 {
     unsigned char *pointer = (unsigned char *)&val;
     for (unsigned int i = 0; i < sizeof(unsigned int); i++)
@@ -555,7 +520,7 @@ ByteStream &ByteStream::operator>>(const unsigned int &val)
     return *this;
 }
 
-ByteStream &ByteStream::operator>>(const int &val)
+ByteStream &ByteStream::operator>>(int &val)
 {
     unsigned char *pointer = (unsigned char *)&val;
     for (unsigned int i = 0; i < sizeof(int); i++)
@@ -565,7 +530,7 @@ ByteStream &ByteStream::operator>>(const int &val)
     return *this;
 }
 
-ByteStream &ByteStream::operator>>(const unsigned long int &val)
+ByteStream &ByteStream::operator>>(unsigned long int &val)
 {
     unsigned char *pointer = (unsigned char *)&val;
     for (unsigned int i = 0; i < sizeof(unsigned long int); i++)
@@ -575,7 +540,7 @@ ByteStream &ByteStream::operator>>(const unsigned long int &val)
     return *this;
 }
 
-ByteStream &ByteStream::operator>>(const long int &val)
+ByteStream &ByteStream::operator>>(long int &val)
 {
     unsigned char *pointer = (unsigned char *)&val;
     for (unsigned int i = 0; i < sizeof(long int); i++)
@@ -585,7 +550,7 @@ ByteStream &ByteStream::operator>>(const long int &val)
     return *this;
 }
 
-ByteStream &ByteStream::operator>>(const unsigned long long int &val)
+ByteStream &ByteStream::operator>>(unsigned long long int &val)
 {
     unsigned char *pointer = (unsigned char *)&val;
     for (unsigned int i = 0; i < sizeof(unsigned long long int); i++)
@@ -595,7 +560,7 @@ ByteStream &ByteStream::operator>>(const unsigned long long int &val)
     return *this;
 }
 
-ByteStream &ByteStream::operator>>(const long long int &val)
+ByteStream &ByteStream::operator>>(long long int &val)
 {
     unsigned char *pointer = (unsigned char *)&val;
     for (unsigned int i = 0; i < sizeof(long long int); i++)
@@ -605,7 +570,7 @@ ByteStream &ByteStream::operator>>(const long long int &val)
     return *this;
 }
 
-ByteStream &ByteStream::operator>>(const float &val)
+ByteStream &ByteStream::operator>>(float &val)
 {
     unsigned char *pointer = (unsigned char *)&val;
     for (unsigned int i = 0; i < sizeof(float); i++)
@@ -615,7 +580,7 @@ ByteStream &ByteStream::operator>>(const float &val)
     return *this;
 }
 
-ByteStream &ByteStream::operator>>(const double &val)
+ByteStream &ByteStream::operator>>(double &val)
 {
     unsigned char *pointer = (unsigned char *)&val;
     for (unsigned int i = 0; i < sizeof(double); i++)
@@ -625,7 +590,7 @@ ByteStream &ByteStream::operator>>(const double &val)
     return *this;
 }
 
-ByteStream &ByteStream::operator>>(const long double &val)
+ByteStream &ByteStream::operator>>(long double &val)
 {
     unsigned char *pointer = (unsigned char *)&val;
     for (unsigned int i = 0; i < sizeof(long double); i++)
@@ -635,19 +600,20 @@ ByteStream &ByteStream::operator>>(const long double &val)
     return *this;
 }
 
-ByteStream &ByteStream::operator>>(const char string[])
+ByteStream &ByteStream::operator>>(std::string& val)
 {
-    unsigned int i = 0;
+    unsigned int size = 0;
+    *this >> size;
+    val.resize(size);
 
-    while(buffer[index - 1] != 0 && length > 0)
-    {
-        *this >> string[i];
-        i++;
+    for (unsigned int i = 0; i < size; ++i) {
+        val[i] = remove();
     }
+
     return *this;
 }
 
-ByteStream &ByteStream::operator>>(const ByteStream::Array &array)
+ByteStream &ByteStream::operator>>(ByteStream::Array &array)
 {
     switch (array.type)
     {
